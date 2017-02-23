@@ -4,10 +4,26 @@ import java.util.LinkedList;
 import java.util.TreeMap;
 
 public class Main {
-	static int videos[];
+	static Video videos[];
 	static EndPoint endPoints[];
 	static Cache caches[];
 	static int numOfVideos, numOfEndPoints, numOfRequests, numOfCaches, cacheSize;
+
+	static class Video implements Comparable<Video> {
+		int index;
+		int size;
+		int freq; //
+
+		Video(int index, int size) {
+			this.index = index;
+			this.size = size;
+		}
+
+		@Override
+		public int compareTo(Video o) {
+			return -Integer.compare(freq, o.freq);
+		}
+	}
 
 	static class Cache {
 		LinkedList<Edge> connectedEndPoint;
@@ -56,9 +72,9 @@ public class Main {
 			caches[i] = new Cache();
 		}
 		l = bf.readLine().split(" ");
-		videos = new int[numOfVideos];
+		videos = new Video[numOfVideos];
 		for (int i = 0; i < l.length; i++) {
-			videos[i] = Integer.parseInt(l[i]);
+			videos[i] = new Video(i, Integer.parseInt(l[i]));
 		}
 		for (int i = 0; i < numOfEndPoints; i++) {
 			l = bf.readLine().split(" ");
@@ -79,5 +95,9 @@ public class Main {
 			int numOfR = Integer.parseInt(l[2]);
 			endPoints[epId].addVideo(vidId, numOfR);
 		}
+	}
+
+	static void calcMostFrequentVideos() {
+
 	}
 }
