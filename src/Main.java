@@ -3,8 +3,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 
 public class Main {
@@ -69,15 +71,26 @@ public class Main {
 		}
 	}
 
+	static class Cost {
+		public Cost(int index, double averageLatency) {
+			vidId = index;
+			average = averageLatency;
+		}
+
+		int vidId;
+		double average;
+	}
+
 	public static void main(String[] args) throws Exception {
 		// BufferedReader bf = new BufferedReader(new
 		// InputStreamReader(System.in));
+		// String filename = "test";
 		String filename = "kittens";
-		//String filename = "videos_worth_spreading";
-		//String filename = "trending_today";
-		//String filename = "me_at_the_zoo";
+		// String filename = "videos_worth_spreading";
+		// String filename = "trending_today";
+		// String filename = "me_at_the_zoo";
 
-		BufferedReader bf = new BufferedReader(new FileReader(filename+".in"));
+		BufferedReader bf = new BufferedReader(new FileReader(filename + ".in"));
 		String[] l = bf.readLine().split(" ");
 		numOfVideos = Integer.parseInt(l[0]);
 		numOfEndPoints = Integer.parseInt(l[1]);
@@ -125,8 +138,7 @@ public class Main {
 				if (caches[j].updatedSize < videos[i].size) {
 					continue;
 				}
-				double averageLatency = calculatedAverageLatency(videos[i].index, caches[j],
-						videos[i].myEndPoints);
+				double averageLatency = calculatedAverageLatency(videos[i].index, caches[j], videos[i].myEndPoints);
 				if (averageLatency > bestAverage) {
 					bestAverage = averageLatency;
 					bestCacheIndex = j;
@@ -141,6 +153,34 @@ public class Main {
 
 			}
 		}
+		PriorityQueue<Cost> bestVideos = new PriorityQueue<>(new Comparator<Cost>() {
+
+			@Override
+			public int compare(Cost o1, Cost o2) {
+				return -Double.compare(o1.average, o2.average);
+			}
+		});
+		Video tmp;
+		double averageLatency;
+		Video[] nVideos = new Video[numOfVideos];
+		for (int i = 0; i < nVideos.length; i++) {
+			nVideos[videos[i].index] = videos[i];
+		}
+		for (int i = 0; i < caches.length; i++) {
+			for (int j = 0; j < nVideos.length; j++) {
+				if (caches[i].addedVids.contains(nVideos[j].index))
+					continue;
+				averageLatency = calculatedAverageLatency(nVideos[j].index, caches[i], nVideos[j].myEndPoints);
+				bestVideos.add(new Cost(nVideos[j].index, averageLatency));
+			}
+			while (!bestVideos.isEmpty()) {
+				tmp = nVideos[bestVideos.poll().vidId];
+				if (tmp.size <= caches[i].updatedSize) {
+					caches[i].addedVids.add(tmp.index);
+					caches[i].updatedSize -= tmp.size;
+				}
+			}
+		}
 		StringBuilder sb = new StringBuilder();
 		sb.append(usedCaches + "\n");
 		for (Cache c : caches) {
@@ -152,7 +192,7 @@ public class Main {
 			}
 			sb.append("\n");
 		}
-		PrintWriter pw = new PrintWriter(new File(filename+".out"));
+		PrintWriter pw = new PrintWriter(new File(filename + ".out"));
 		pw.print(sb.toString());
 		pw.flush();
 		pw.close();
@@ -165,7 +205,6 @@ public class Main {
 		for (int endPointInd : myEndPoints) {
 			tmp = endPoints[endPointInd];
 			requests = tmp.connectedVideos.get(vidInd);
-			// TODO check
 			if (!cache.connectedEndPoint.containsKey(tmp.index))
 				continue;
 			cacheLatency = cache.connectedEndPoint.get(tmp.index);
