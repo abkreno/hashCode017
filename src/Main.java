@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
@@ -13,22 +15,30 @@ public class Main {
 		int index;
 		int size;
 		int freq; //
+		TreeMap<Integer, Integer> myEndPoints;
 
 		Video(int index, int size) {
 			this.index = index;
 			this.size = size;
+			myEndPoints = new TreeMap<>();
 		}
 
 		@Override
 		public int compareTo(Video o) {
 			return -Integer.compare(freq, o.freq);
 		}
+
+		public void addEndPoint(int epId, int numOfR) {
+			myEndPoints.put(epId, numOfR);
+		}
 	}
 
 	static class Cache {
 		LinkedList<Edge> connectedEndPoint;
+		int index;
 
-		Cache() {
+		Cache(int i) {
+			index = i;
 			connectedEndPoint = new LinkedList<>();
 		}
 
@@ -69,7 +79,7 @@ public class Main {
 		endPoints = new EndPoint[numOfEndPoints];
 		caches = new Cache[numOfCaches];
 		for (int i = 0; i < numOfCaches; i++) {
-			caches[i] = new Cache();
+			caches[i] = new Cache(i);
 		}
 		l = bf.readLine().split(" ");
 		videos = new Video[numOfVideos];
@@ -93,11 +103,10 @@ public class Main {
 			int vidId = Integer.parseInt(l[0]);
 			int epId = Integer.parseInt(l[1]);
 			int numOfR = Integer.parseInt(l[2]);
-			endPoints[epId].addVideo(vidId, numOfR);
+			videos[vidId].addEndPoint(epId, numOfR);
+			videos[vidId].freq += numOfR;
 		}
-	}
-
-	static void calcMostFrequentVideos() {
+		Arrays.sort(videos);
 
 	}
 }
